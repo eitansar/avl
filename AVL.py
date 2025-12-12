@@ -115,6 +115,34 @@ class AVLTree(object):
     and h is the number of PROMOTE cases during the AVL rebalancing
     """
 
+    def leftrotation(self,r):
+        l = r.right
+        if r.parent.right == r:
+            r.parent.right = l
+        else:
+            r.parent.left = l
+        r.right  =l.left
+        l.left = r
+        l.parent = r.parent
+        r.parent = l
+        r.right.parent = r
+        rlh =0
+        if r.left is not None:
+            rlh = r.left.height
+        rrh = 0
+        if r.right is not None:
+            rrh = r.right.height
+        llh = 0
+        if l.left is not None:
+            llh = l.left.height
+        lrh = 0
+        if l.right is not None:
+            lrh = l.right.height
+        r.height = max(rlh,rrh) + 1
+        l.height = max(llh,lrh) + 1
+        r.bf = rlh - rrh
+        l.bf = llh - lrh
+        return 1
     def insert(self, key, val):
         r = self.root
         if not r.is_real_node():
@@ -138,7 +166,7 @@ class AVLTree(object):
 
         else:
             r_p.right = x
-        x.parant = r_p
+        x.parent = r_p
         x.height = 0
         self.bf = 0
         h = 0
