@@ -55,6 +55,9 @@ class AVLTree(object):
         self.root = None
         self.max = None
 
+    def __repr__(self):
+        return print_tree_top_down(self.root)
+
     """searches for a node in the dictionary corresponding to the key (starting at the root)
 
     @type key: int
@@ -298,6 +301,47 @@ def right_rotation(b):
         a.parent.right = a
     b.parent = a
 
+def print_tree_top_down(root):
+    def height(node):
+        return node.height
+
+
+    def print_level(nodes, level, max_width):
+        if not any(nodes):
+            return
+
+        gap = max_width // (2 ** level)
+        line_nodes = []
+        line_edges = []
+
+        for node in nodes:
+            if node:
+                line_nodes.append(str(node.val))
+                line_edges.append(("/" if node.left else " ",
+                                   "\\" if node.right else " "))
+            else:
+                line_nodes.append(" ")
+                line_edges.append((" ", " "))
+
+        print((" " * gap).join(f"{n:^3}" for n in line_nodes))
+
+        if level > 0:
+            print((" " * gap).join(
+                f"{l}   {r}" for l, r in line_edges
+            ))
+
+        next_nodes = []
+        for node in nodes:
+            if node:
+                next_nodes.extend([node.left, node.right])
+            else:
+                next_nodes.extend([None, None])
+
+        print_level(next_nodes, level + 1, max_width)
+
+    h = height(root)
+    max_width = 2 ** h * 4
+    print_level([root], 1, max_width)
 
 
 
