@@ -62,7 +62,7 @@ class AVLTree(object):
 
     def search(self, key):
         r = self.root
-        counter = 0
+        counter = 1
         while r.key != key:
             if not r.is_real_node():
                 return (None, counter)
@@ -88,7 +88,7 @@ class AVLTree(object):
             return (None, 0)
         r = self.max
         counter = 0
-        while r.parant.Key >= Key:
+        while r.parant.Key >= key:
             r = r.parent
             counter += 1
         while r.key != key:
@@ -147,7 +147,7 @@ class AVLTree(object):
             r_p.bf = r_p.keft.height - r_p.right.height
             if -2 < r_p.bf < 2 and not change:
                 break
-            h + +
+            h+=1
             if -2 < r_p.bf < 2:
                 r_p = r_p.parent
             else:
@@ -251,4 +251,4 @@ class AVLTree(object):
 
 
 def right_rotation(B):
-         A = B.right
+    B.right
