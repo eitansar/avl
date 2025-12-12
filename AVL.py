@@ -27,6 +27,8 @@ class AVLNode(object):
         self.height = -1
         self.bf = 0
 
+    def __eq__(self,other):
+        return self.key == other.key
     """returns whether self is not a virtual node 
 
     @rtype: bool
@@ -35,6 +37,8 @@ class AVLNode(object):
 
     def is_real_node(self):
         return self is not None
+
+
 
 
 """
@@ -278,5 +282,22 @@ class AVLTree(object):
         return self.root
 
 
-def right_rotation(B):
-    B.right
+def right_rotation(b):
+    if b.parent.left is b:
+        x = 'left'
+    else:
+        x = 'right'
+    a = b.left
+    b.left = a.right
+    b.left.parent = b
+    a.right = b
+    a.parent = b.parent
+    if x == 'left':
+        a.parent.left = a
+    else:
+        a.parent.right = a
+    b.parent = a
+
+
+
+
