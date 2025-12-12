@@ -18,7 +18,7 @@ class AVLNode(object):
     @param value: data of your node
     """
 
-    def _init_(self, key, value):
+    def __init__(self, key, value):
         self.key = key
         self.value = value
         self.left = None
@@ -35,8 +35,8 @@ class AVLNode(object):
     @returns: False if self is a virtual node, True otherwise.
     """
 
-    def is_real_node(self):
-        return self is not None
+def is_real_node(r):
+     return r is not None
 
 
 
@@ -51,12 +51,13 @@ class AVLTree(object):
     Constructor, you are allowed to add more fields.
     """
 
-    def _init_(self):
+    def __init__(self):
         self.root = None
         self.max = None
 
     def __repr__(self):
-        return print_tree_top_down(self.root)
+        print_tree_top_down(self.root)
+        return "print"
 
     """searches for a node in the dictionary corresponding to the key (starting at the root)
 
@@ -91,7 +92,7 @@ class AVLTree(object):
     """
 
     def finger_search(self, key):
-        if not self.max.is_real_node():
+        if not is_real_node(self.max):
             return (None, 0)
         r = self.max
         counter = 0
@@ -99,7 +100,7 @@ class AVLTree(object):
             r = r.parent
             counter += 1
         while r.key != key:
-            if not r.is_real_node():
+            if not is_real_node(r):
                 return (None, counter)
             if r.key > key:
                 r = r.right
@@ -152,13 +153,13 @@ class AVLTree(object):
         return 1
     def insert(self, key, val):
         r = self.root
-        if not r.is_real_node():
+        if not is_real_node(r):
             root = AVLNode(key, val)
             self.root = root
             return (root, 0, 0)
         r_p = None
         counter = 0
-        while r.is_real_node():
+        while is_real_node(r):
             if r.key > key:
                 r_p = r
                 r = r.right
@@ -175,8 +176,9 @@ class AVLTree(object):
             r_p.right = x
         x.parent = r_p
         x.height = 0
-        self.bf = 0
+        x.bf = 0
         h = 0
+        return
         while r_p != None:
             change = (r_p.height == max(r_p.left.height, r_p.right.height) + 1)
             r_p.bf = r_p.keft.height - r_p.right.height
@@ -186,12 +188,17 @@ class AVLTree(object):
             if -2 < r_p.bf < 2:
                 r_p = r_p.parent
             else:
-                caserotation = 1 if r_p.bf == -2 and r_p.right == -1
-                caserotation = 2 if r_p.bf == -2 and r_p.right == 1
-                caserotation = 3 if r_p.bf == 2 and r_p.left == -1
-                caserotation = 4 if r_p.bf == 2 and r_p.left == 1
-                if caserotation == 1:
 
+                if r_p.bf == -2 and r_p.right.bf== -1:
+                    self.leftrotation(r_p)
+                elif r_p.bf == -2 and r_p.right.bf == 1:
+
+                    self.leftrotation(r_p)
+
+                elif r_p.bf == 2 and r_p.left.bf == -1:
+                    return
+                elif r_p.bf == 2 and r_p.left.bf == 1:
+                    return
         return {r, counter}
 
     """inserts a new node into the dictionary with corresponding key and value, starting at the max
@@ -311,12 +318,13 @@ def print_tree_top_down(root):
             return
 
         gap = max_width // (2 ** level)
+        gap = int(gap)
         line_nodes = []
         line_edges = []
 
         for node in nodes:
             if node:
-                line_nodes.append(str(node.val))
+                line_nodes.append(str(node.key))
                 line_edges.append(("/" if node.left else " ",
                                    "\\" if node.right else " "))
             else:
@@ -344,4 +352,11 @@ def print_tree_top_down(root):
     print_level([root], 1, max_width)
 
 
+
+AVL = AVLTree()
+AVL.insert(5,10)
+AVL.insert(10,20)
+AVL.insert(3,10)
+
+print(AVL)
 
