@@ -5,7 +5,7 @@
 # name2:
 # username2:
 
-
+import math
 """A class represnting a node in an AVL tree"""
 
 
@@ -35,8 +35,11 @@ class AVLNode(object):
     @returns: False if self is a virtual node, True otherwise.
     """
 
-def is_real_node(r):
-     return r is not None
+    def __repr__(self):
+        return '(' + str(self.key) + ', ' + str(self.value) + ')'
+
+def is_real_node(self):
+    return self is not None
 
 
 
@@ -55,9 +58,41 @@ class AVLTree(object):
         self.root = None
         self.max = None
 
-    def __repr__(self):
-        print_tree_top_down(self.root)
-        return "print"
+    def __repr__(self):  # you don't need to understand the implementation of this method
+        def printree(root):
+            if not root:
+                return ["#"]
+
+            root_key = str(root.key)
+            left, right = printree(root.left), printree(root.right)
+
+            lwid = len(left[-1])
+            rwid = len(right[-1])
+            rootwid = len(root_key)
+
+            result = [(lwid + 1) * " " + root_key + (rwid + 1) * " "]
+
+            ls = len(left[0].rstrip())
+            rs = len(right[0]) - len(right[0].lstrip())
+            result.append(ls * " " + (lwid - ls) * "_" + "/" + rootwid * " " + "\\" + rs * "_" + (rwid - rs) * " ")
+
+            for i in range(max(len(left), len(right))):
+                row = ""
+                if i < len(left):
+                    row += left[i]
+                else:
+                    row += lwid * " "
+                row += (rootwid + 2) * " "
+
+                if i < len(right):
+                    row += right[i]
+                else:
+                    row += rwid * " "
+                result.append(row)
+            return result
+
+        return '\n'.join(printree(self.root))
+
 
     """searches for a node in the dictionary corresponding to the key (starting at the root)
 
@@ -71,10 +106,10 @@ class AVLTree(object):
     def search(self, key):
         r = self.root
         counter = 1
-        while r.key != key:
-            if not r.is_real_node():
-                return (None, counter)
-            if r.key > key:
+        if r is None:
+            return (None,1)
+        while r is not None and r.key != key:
+            if r.key < key:
                 r = r.right
                 counter += 1
             else:
@@ -96,7 +131,7 @@ class AVLTree(object):
             return (None, 0)
         r = self.max
         counter = 0
-        while r.parant.Key >= key:
+        while r.parent.key >= key:
             r = r.parent
             counter += 1
         while r.key != key:
@@ -123,50 +158,73 @@ class AVLTree(object):
     and h is the number of PROMOTE cases during the AVL rebalancing
     """
 
+    def right_rotation(self,b):
+        if b.parent is None:
+            x = 'root'
+        elif b.parent.left is b:
+            x = 'left'
+        else:
+            x = 'right'
+        a = b.left
+        if x=='root':
+            self.root = a
+            a.parent = None
+        a_l = height_2(a.left)
+        a_r = height_2(a.right)
+        b_r = height_2(b.right)
+        b.height = max(a_r, b_r) + 1
+        a.height = max(b.height, a_l) + 1
+        b.left = a.right
+        if b.left is not None:
+            b.left.parent = b
+        a.right = b
+        a.parent = b.parent
+        if x == 'left':
+            a.parent.left = a
+        if x == 'right':
+            a.parent.right = a
+        b.parent = a
+        a.bf = height_2(a.left) - height_2(a.right)
+        b.bf = height_2(b.left) - height_2(b.right)
     def leftrotation(self,r):
         l = r.right
-        if r.parent.right == r:
-            r.parent.right = l
+        if r == self.root:
+            self.root = l
         else:
-            r.parent.left = l
+            if r.parent.right == r:
+                r.parent.right = l
+            else:
+                r.parent.left = l
         r.right  =l.left
         l.left = r
         l.parent = r.parent
         r.parent = l
-        r.right.parent = r
-        rlh =0
-        if r.left is not None:
-            rlh = r.left.height
-        rrh = 0
         if r.right is not None:
-            rrh = r.right.height
-        llh = 0
-        if l.left is not None:
-            llh = l.left.height
-        lrh = 0
-        if l.right is not None:
-            lrh = l.right.height
-        r.height = max(rlh,rrh) + 1
-        l.height = max(llh,lrh) + 1
-        r.bf = rlh - rrh
-        l.bf = llh - lrh
+            r.right.parent = r
+        r.height = 1 + max(height_2(r.left), height_2(r.right))
+        r.bf = height_2(r.left) - height_2(r.right)
+
+        l.height = 1 + max(height_2(l.left), height_2(l.right))
+        l.bf = height_2(l.left) - height_2(l.right)
+
         return 1
     def insert(self, key, val):
         r = self.root
         if not is_real_node(r):
             root = AVLNode(key, val)
             self.root = root
+            root.height = 0
             return (root, 0, 0)
         r_p = None
         counter = 0
         while is_real_node(r):
             if r.key > key:
                 r_p = r
-                r = r.right
+                r = r.left
                 counter += 1
             else:
                 r_p = r
-                r = r.left
+                r = r.right
                 counter += 1
         x = AVLNode(key, val)
         if key < r_p.key:
@@ -178,11 +236,11 @@ class AVLTree(object):
         x.height = 0
         x.bf = 0
         h = 0
-        return
-        while r_p != None:
-            change = (r_p.height == max(r_p.left.height, r_p.right.height) + 1)
-            r_p.bf = r_p.keft.height - r_p.right.height
-            if -2 < r_p.bf < 2 and not change:
+        while r_p is not None:
+            change = (r_p.height != max(height_2(r_p.left), height_2(r_p.right)) + 1)
+            r_p.height = max(height_2(r_p.left), height_2(r_p.right)) + 1
+            r_p.bf = height_2(r_p.left) - height_2(r_p.right)
+            if not change:
                 break
             h+=1
             if -2 < r_p.bf < 2:
@@ -192,14 +250,16 @@ class AVLTree(object):
                 if r_p.bf == -2 and r_p.right.bf== -1:
                     self.leftrotation(r_p)
                 elif r_p.bf == -2 and r_p.right.bf == 1:
-
+                    self.right_rotation(r_p.right)
                     self.leftrotation(r_p)
 
                 elif r_p.bf == 2 and r_p.left.bf == -1:
-                    return
+                    self.leftrotation(r_p.left)
+                    self.right_rotation(r_p)
                 elif r_p.bf == 2 and r_p.left.bf == 1:
-                    return
-        return {r, counter}
+                    self.right_rotation(r_p)
+        return (x,counter,h)
+
 
     """inserts a new node into the dictionary with corresponding key and value, starting at the max
 
@@ -292,71 +352,21 @@ class AVLTree(object):
         return self.root
 
 
-def right_rotation(b):
-    if b.parent.left is b:
-        x = 'left'
-    else:
-        x = 'right'
-    a = b.left
-    b.left = a.right
-    b.left.parent = b
-    a.right = b
-    a.parent = b.parent
-    if x == 'left':
-        a.parent.left = a
-    else:
-        a.parent.right = a
-    b.parent = a
 
-def print_tree_top_down(root):
-    def height(node):
+
+def height_2(node):
+    if type(node) == AVLNode:
         return node.height
+    else:
+        return -1
 
-
-    def print_level(nodes, level, max_width):
-        if not any(nodes):
-            return
-
-        gap = max_width // (2 ** level)
-        gap = int(gap)
-        line_nodes = []
-        line_edges = []
-
-        for node in nodes:
-            if node:
-                line_nodes.append(str(node.key))
-                line_edges.append(("/" if node.left else " ",
-                                   "\\" if node.right else " "))
-            else:
-                line_nodes.append(" ")
-                line_edges.append((" ", " "))
-
-        print((" " * gap).join(f"{n:^3}" for n in line_nodes))
-
-        if level > 0:
-            print((" " * gap).join(
-                f"{l}   {r}" for l, r in line_edges
-            ))
-
-        next_nodes = []
-        for node in nodes:
-            if node:
-                next_nodes.extend([node.left, node.right])
-            else:
-                next_nodes.extend([None, None])
-
-        print_level(next_nodes, level + 1, max_width)
-
-    h = height(root)
-    max_width = 2 ** h * 4
-    print_level([root], 1, max_width)
+t = AVLTree()
+t.insert(4,2)
+t.insert(2,0)
+t.insert(1,0)
+t.insert(12,1)
+t.insert(13,1)
 
 
 
-AVL = AVLTree()
-AVL.insert(5,10)
-AVL.insert(10,20)
-AVL.insert(3,10)
-
-print(AVL)
-
+print(t)
