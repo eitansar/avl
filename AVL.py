@@ -6,6 +6,9 @@
 # username2:
 
 import math
+
+from statsmodels.sandbox.regression.try_treewalker import tree2
+
 """A class represnting a node in an AVL tree"""
 
 
@@ -38,6 +41,14 @@ class AVLNode(object):
     def __repr__(self):
         return '(' + str(self.key) + ', ' + str(self.value) + ')'
 
+    def in_order(self,res):
+        if self is None:
+            return
+        self.left.in_order(res)
+        res.append(self.key,self.value)
+        self.right.in_order(res)
+
+
 def is_real_node(self):
     return self is not None
 
@@ -54,9 +65,9 @@ class AVLTree(object):
     Constructor, you are allowed to add more fields.
     """
 
-    def __init__(self):
-        self.root = None
-        self.max = None
+    def __init__(self, root=None, max=None):
+        self.root = root
+        self.max = max
 
     def __repr__(self):  # you don't need to understand the implementation of this method
         def printree(root):
@@ -382,8 +393,24 @@ class AVLTree(object):
     dictionary larger than node.key.
     """
 
+    @staticmethod
+    def detach_tree(node):
+        avl = AVLTree(root=node)
+        node.parent = None
+        return avl
+
     def split(self, node):
-        return None, None
+        smaller = AVLTree.detach_tree(node.left)
+        greater = AVLTree.detach_tree(node.right)
+        while node.parent is not None:
+            n_p = node.parent
+            if node is n_p.right:
+                smaller.join(AVLTree.detach_tree(n_p.left),n_p.key,n_p.value)
+            else:
+                greater.join(AVLTree.detach_tree(n_p.right), n_p.key, n_p.value)
+            node = n_p
+
+        return smaller,greater
 
     """returns an array representing dictionary 
 
@@ -392,7 +419,10 @@ class AVLTree(object):
     """
 
     def avl_to_array(self):
-        return None
+        res = []
+        self.root.in_order(res)
+        return res
+
 
     """returns the node with the maximal key in the dictionary
 
@@ -436,6 +466,6 @@ t.insert(2,0)
 t.insert(1,0)
 t.insert(12,1)
 t.insert(13,1)
-t.delete(t.search(1)[0])
+
 
 print(t)
