@@ -44,9 +44,11 @@ class AVLNode(object):
     def in_order(self,res):
         if self is None:
             return
-        self.left.in_order(res)
-        res.append(self.key,self.value)
-        self.right.in_order(res)
+        if self.left is not None:
+            self.left.in_order(res)
+        res.append((self.key,self.value))
+        if self.right is not None:
+            self.right.in_order(res)
 
 
 def is_real_node(self):
@@ -142,17 +144,15 @@ class AVLTree(object):
             return (None, 0)
         r = self.max
         counter = 0
-        while r.parent.key >= key:
+        while r.parent is not None and r.parent.key >= key:
             r = r.parent
             counter += 1
-        while r.key != key:
-            if not is_real_node(r):
-                return (None, counter)
+        while is_real_node(r) and r.key != key:
             if r.key > key:
-                r = r.right
+                r = r.left
                 counter += 1
             else:
-                r = r.left
+                r = r.right
                 counter += 1
         return (r, counter)
 
@@ -238,6 +238,8 @@ class AVLTree(object):
                 r = r.right
                 counter += 1
         x = AVLNode(key, val)
+        if key > self.max.key:
+            self.max = x
         if key < r_p.key:
             r_p.left = x
 
@@ -286,7 +288,68 @@ class AVLTree(object):
     """
 
     def finger_insert(self, key, val):
-        return None, -1, -1
+            r = self.max
+            if not is_real_node(r):
+                root = AVLNode(key, val)
+                self.root = root
+                root.height = 0
+                root.bf = 0
+                self.max = root
+                return (root, 0, 0)
+
+
+
+            counter = 0
+
+            while r.parent is not None and r.parent.key >= key:
+                r = r.parent
+                counter += 1
+            r_p = r.parent
+            while is_real_node(r):
+                if r.key > key:
+                    r_p = r
+                    r = r.left
+                    counter += 1
+                else:
+                    r_p = r
+                    r = r.right
+                    counter += 1
+            x = AVLNode(key, val)
+            x.height = 0
+            x.parent = r_p
+            if key > self.max.key:
+                self.max =x
+            if key > r_p.key:
+                r_p.right = x
+            else:
+                r_p.left = x
+
+            h = 0
+            while r_p is not None:
+                change = (r_p.height != max(height_2(r_p.left), height_2(r_p.right)) + 1)
+                r_p.bf = height_2(r_p.left) - height_2(r_p.right)
+                if not change:
+                    break
+                r_p.height = max(height_2(r_p.left), height_2(r_p.right)) + 1
+                h += 1
+                if -2 < r_p.bf < 2:
+                    r_p = r_p.parent
+                else:
+
+                    if r_p.bf == -2 and r_p.right.bf == -1:
+                        self.leftrotation(r_p)
+                    elif r_p.bf == -2 and r_p.right.bf == 1:
+                        self.right_rotation(r_p.right)
+                        self.leftrotation(r_p)
+
+                    elif r_p.bf == 2 and r_p.left.bf == -1:
+                        self.leftrotation(r_p.left)
+                        self.right_rotation(r_p)
+                    elif r_p.bf == 2 and r_p.left.bf == 1:
+                        self.right_rotation(r_p)
+
+                    break
+            return (x, counter, h)
 
     """deletes node from the dictionary
 
@@ -298,31 +361,31 @@ class AVLTree(object):
         if node is None:
             return
         if node.right is None and node.left is None:
-            if node == self.root:
+            if node is self.root:
                 self.root = None
                 return
-            elif node.parent.right == node:
+            elif node.parent.right is node:
                 node.parent.right = None
-            elif node.parent.left == node:
+            elif node.parent.left is node:
                 node.parent.left = None
             node = node.parent
         elif node.right is None:
-            if node == self.root:
+            if node is self.root:
                 self.root = node.left
                 return
-            elif node.parent.right == node:
+            elif node.parent.right is node:
                 node.parent.right = node.left
-            elif node.parent.left == node:
+            elif node.parent.left is node:
                 node.parent.left = node.left
             node.left.parent = node.parent
             node = node.parent
         elif node.left is None:
-            if node == self.root:
+            if node is self.root:
                 self.root = node.right
                 return
-            elif node.parent.right == node:
+            elif node.parent.right is node:
                 node.parent.right = node.right
-            elif node.parent.left == node:
+            elif node.parent.left is node:
                 node.parent.left = node.right
             node.right.parent = node.parent
             node = node.parent
@@ -332,8 +395,8 @@ class AVLTree(object):
             while nodego.left is not None:
                 nodego = nodego.left
             nodepar = nodego.parent
-            print(nodepar)
-            print(nodego.key)
+            #print(nodepar)
+            #print(nodego.key)
             if nodepar.right is not None and nodepar.right == nodego:
                 nodepar.right = nodego.right
                 if nodego.right is not None:
@@ -395,9 +458,16 @@ class AVLTree(object):
 
     @staticmethod
     def detach_tree(node):
-        avl = AVLTree(root=node)
+        if node is None:
+            return AVLTree(root=None)
+        p = node.parent
+        if p is not None:
+            if p.left is node:
+                p.left = None
+            else:
+                p.right = None
         node.parent = None
-        return avl
+        return AVLTree(root=node)
 
     def split(self, node):
         smaller = AVLTree.detach_tree(node.left)
@@ -409,7 +479,16 @@ class AVLTree(object):
             else:
                 greater.join(AVLTree.detach_tree(n_p.right), n_p.key, n_p.value)
             node = n_p
+        r1 = greater.root
+        r2 = smaller.root
+        while r1 is not None and r1.right is not None:
+            r1 = r1.right
 
+        greater.max = r1
+        while r2 is not None and r2.right is not None:
+            r2 = r2.right
+
+        smaller.max = r2
         return smaller,greater
 
     """returns an array representing dictionary 
@@ -420,6 +499,8 @@ class AVLTree(object):
 
     def avl_to_array(self):
         res = []
+        if self.root is None:
+            return []
         self.root.in_order(res)
         return res
 
@@ -460,12 +541,4 @@ def height_2(node):
     else:
         return -1
 
-t = AVLTree()
-t.insert(4,2)
-t.insert(2,0)
-t.insert(1,0)
-t.insert(12,1)
-t.insert(13,1)
 
-
-print(t)
