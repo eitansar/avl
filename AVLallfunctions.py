@@ -610,6 +610,8 @@ class AVLTree(object):
         return AVLTree(root=node)
 
     def split(self, node):
+        if node is None:
+            return AVLTree(),AVLTree()
         smaller = AVLTree.detach_tree(node.left)
         greater = AVLTree.detach_tree(node.right)
         lastnode = node
@@ -688,5 +690,3 @@ def height_2(node):
         return node.height
     else:
         return -1
-
-
