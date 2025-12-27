@@ -7,13 +7,12 @@
 
 import math
 
-from statsmodels.sandbox.regression.try_treewalker import tree2
 
 """A class represnting a node in an AVL tree"""
 
 
 class AVLNode(object):
-    """Constructor, you are allowed to add more fields.
+    """Constructor, you are allowed to add more fie=lds.
 
     @type key: int
     @param key: key of your node
@@ -70,6 +69,7 @@ class AVLTree(object):
     def __init__(self, root=None, max=None):
         self.root = root
         self.max = max
+        self.sz =0
 
     def __repr__(self):  # you don't need to understand the implementation of this method
         def printree(root):
@@ -141,9 +141,9 @@ class AVLTree(object):
 
     def finger_search(self, key):
         if not is_real_node(self.max):
-            return (None, 0)
+            return (None, 1)
         r = self.max
-        counter = 0
+        counter = 1
         while r.parent is not None and r.parent.key >= key:
             r = r.parent
             counter += 1
@@ -180,11 +180,7 @@ class AVLTree(object):
         if x=='root':
             self.root = a
             a.parent = None
-        a_l = height_2(a.left)
-        a_r = height_2(a.right)
-        b_r = height_2(b.right)
-        b.height = max(a_r, b_r) + 1
-        a.height = max(b.height, a_l) + 1
+
         b.left = a.right
         if b.left is not None:
             b.left.parent = b
@@ -195,14 +191,20 @@ class AVLTree(object):
         if x == 'right':
             a.parent.right = a
         b.parent = a
-        a.bf = height_2(a.left) - height_2(a.right)
+        b_r = height_2(b.right)
+        b_l = height_2(b.left)
+        b.height = max(b_r, b_l) + 1
+        a_l = height_2(a.left)
+        a_r = height_2(a.right)
+        a.height = max(a_r, a_l) + 1
         b.bf = height_2(b.left) - height_2(b.right)
+        a.bf = height_2(a.left) - height_2(a.right)
     def leftrotation(self,r):
         l = r.right
         if r == self.root:
             self.root = l
         else:
-            if r.parent.right == r:
+            if r.parent.right is r:
                 r.parent.right = l
             else:
                 r.parent.left = l
@@ -214,17 +216,18 @@ class AVLTree(object):
             r.right.parent = r
         r.height = 1 + max(height_2(r.left), height_2(r.right))
         r.bf = height_2(r.left) - height_2(r.right)
-
         l.height = 1 + max(height_2(l.left), height_2(l.right))
         l.bf = height_2(l.left) - height_2(l.right)
-
         return 1
     def insert(self, key, val):
         r = self.root
+        self.sz +=1
         if not is_real_node(r):
             root = AVLNode(key, val)
             self.root = root
+            self.max = root
             root.height = 0
+            root.bf = 0
             return (root, 0, 0)
         r_p = None
         counter = 0
@@ -238,8 +241,6 @@ class AVLTree(object):
                 r = r.right
                 counter += 1
         x = AVLNode(key, val)
-        if key > self.max.key:
-            self.max = x
         if key < r_p.key:
             r_p.left = x
 
@@ -271,6 +272,15 @@ class AVLTree(object):
                     self.right_rotation(r_p)
                 elif r_p.bf == 2 and r_p.left.bf == 1:
                     self.right_rotation(r_p)
+                nodemax = self.root
+                while nodemax.right is not None:
+                    nodemax = nodemax.right
+                self.max = nodemax
+                return (x,counter,h)
+        nodemax = self.root
+        while nodemax.right is not None:
+            nodemax = nodemax.right
+        self.max = nodemax
         return (x,counter,h)
 
 
@@ -289,6 +299,7 @@ class AVLTree(object):
 
     def finger_insert(self, key, val):
             r = self.max
+            self.sz +=1
             if not is_real_node(r):
                 root = AVLNode(key, val)
                 self.root = root
@@ -358,8 +369,9 @@ class AVLTree(object):
     """
 
     def delete(self, node):
-        if node is None:
+        if node is None or self.search(node.key)[0] is None:
             return
+        self.sz -=1
         if node.right is None and node.left is None:
             if node is self.root:
                 self.root = None
@@ -369,6 +381,10 @@ class AVLTree(object):
             elif node.parent.left is node:
                 node.parent.left = None
             node = node.parent
+            nodemax = self.root
+            while nodemax.right is not None:
+                nodemax = nodemax.right
+            self.max = nodemax
         elif node.right is None:
             if node is self.root:
                 self.root = node.left
@@ -379,6 +395,10 @@ class AVLTree(object):
                 node.parent.left = node.left
             node.left.parent = node.parent
             node = node.parent
+            nodemax = self.root
+            while nodemax.right is not None:
+                nodemax = nodemax.right
+            self.max = nodemax
         elif node.left is None:
             if node is self.root:
                 self.root = node.right
@@ -389,14 +409,18 @@ class AVLTree(object):
                 node.parent.left = node.right
             node.right.parent = node.parent
             node = node.parent
+            nodemax = self.root
+            while nodemax.right is not None:
+                nodemax = nodemax.right
+            self.max = nodemax
         else:
             nodego = node
             nodego = nodego.right
             while nodego.left is not None:
                 nodego = nodego.left
+            node.key = nodego.key
+            node.value = nodego.value
             nodepar = nodego.parent
-            #print(nodepar)
-            #print(nodego.key)
             if nodepar.right is not None and nodepar.right == nodego:
                 nodepar.right = nodego.right
                 if nodego.right is not None:
@@ -405,29 +429,38 @@ class AVLTree(object):
                 nodepar.left = nodego.right
                 if nodego.right is not None:
                     nodego.right.parent = nodepar
-            node.key = nodego.key
-            node.value = nodego.value
-        heightchange =0
-        if node.height == max(height_2(node.right),height_2(node.left)) +1:
-            heightchange =1
-        node.bf = height_2(node.left) -height_2(node.right)
-        while node is not None and ((node.bf >=2 or node.bf <=-2) or heightchange == 0) :
-            if node.bf == -2:
-                if node.right.bf == 1:
-                    self.right_rotation(node.right)
-                    self.leftrotation(node)
-                elif node.right.bf == 0:
-                    self.leftrotation(node)
-                elif node.right.bf == -1:
-                    self.leftrotation(node)
-            if node.bf == 2:
-                if node.left.bf == 1:
-                    self.right_rotation(node)
-                elif node.left.bf == 0:
-                    self.right_rotation(node)
-                elif node.left.bf == -1:
-                    self.leftrotation(node.left)
-                    self.right_rotation(node)
+            node = nodepar
+            nodemax = self.root
+            while nodemax.right is not None:
+                nodemax = nodemax.right
+            self.max = nodemax
+        while node is not None :
+            node.bf = height_2(node.left) - height_2(node.right)
+            heightbefore = node.height
+            node.height = max(height_2(node.right), height_2(node.left)) + 1
+            if node.bf <2 and node.bf > -2 and node.height == heightbefore:
+                break
+            else:
+                if node.bf == -2:
+                    if node.right.bf == 1:
+                        self.right_rotation(node.right)
+                        self.leftrotation(node)
+                    elif node.right.bf == 0:
+                        self.leftrotation(node)
+                    elif node.right.bf == -1:
+                        self.leftrotation(node)
+                    node = node.parent
+                if node.bf == 2:
+                    if node.left.bf == 1:
+                        self.right_rotation(node)
+                    elif node.left.bf == 0:
+                        self.right_rotation(node)
+                    elif node.left.bf == -1:
+                        self.leftrotation(node.left)
+                        self.right_rotation(node)
+                    node = node.parent
+                if node is not None:
+                    node = node.parent
         return
 
     """joins self with item and another AVLTree
@@ -443,6 +476,113 @@ class AVLTree(object):
     """
 
     def join(self, tree2, key, val):
+        self.sz += 1 + tree2.sz
+        if tree2.root is None:
+            self.insert(key,val)
+            self.sz -=1
+            nodemax = self.root
+            while nodemax.right is not None:
+                nodemax = nodemax.right
+            self.max = nodemax
+            return
+        if self.root is None:
+            self.root = tree2.root
+            self.insert(key,val)
+            self.sz -=1
+            nodemax = self.root
+            while nodemax.right is not None:
+                nodemax = nodemax.right
+            self.max = nodemax
+            return
+        ht = height_2(self.root)
+        htree2 = height_2(tree2.root)
+        nodeadd = AVLNode(key, val)
+        if ht - htree2 <= 1 and ht - htree2 >= -1:
+            if key > self.root.key:
+                nodeadd.left = self.root
+                nodeadd.right = tree2.root
+            else:
+                nodeadd.right = self.root
+                nodeadd.left = tree2.root
+            self.root = nodeadd
+            return
+        if (ht >= htree2 + 2):
+            node = self.root
+            if key > self.root.key:
+                while (height_2(node) > htree2):
+                    node = node.right
+                nodepar = node.parent
+                nodepar.right = nodeadd
+                nodeadd.left = node
+                nodeadd.right = tree2.root
+                tree2.root.parent = nodeadd
+                nodeadd.parent = nodepar
+                node.parent = nodeadd
+            if key < self.root.key:
+                while (height_2(node) > htree2):
+                    node = node.left
+                nodepar = node.parent
+                nodepar.left = nodeadd
+                nodeadd.right = node
+                nodeadd.left = tree2.root
+                tree2.root.parent = nodeadd
+                nodeadd.parent = nodepar
+                node.parent = nodeadd
+        if (ht + 2 <= htree2):
+            node = tree2.root
+            if key < tree2.root.key:
+                while (height_2(node) > ht):
+                    node = node.left
+                nodepar = node.parent
+                nodepar.left = nodeadd
+                nodeadd.right = node
+                nodeadd.left = self.root
+                self.root.parent = nodeadd
+                nodeadd.parent = nodepar
+                node.parent = nodeadd
+            if key > tree2.root.key:
+                while (height_2(node) > ht):
+                    node = node.right
+                nodepar = node.parent
+                nodepar.right = nodeadd
+                nodeadd.left = node
+                nodeadd.right = self.root
+                self.root.parent = nodeadd
+                nodeadd.parent = nodepar
+                node.parent = nodeadd
+            self.root = tree2.root
+        node = nodeadd
+        while node is not None:
+            node.bf = height_2(node.left) - height_2(node.right)
+            heightbefore = node.height
+            node.height = max(height_2(node.right), height_2(node.left)) + 1
+            if node.bf < 2 and node.bf > -2 and node.height == heightbefore:
+                break
+            else:
+                if node.bf == -2:
+                    if node.right.bf == 1:
+                        self.right_rotation(node.right)
+                        self.leftrotation(node)
+                    elif node.right.bf == 0:
+                        self.leftrotation(node)
+                    elif node.right.bf == -1:
+                        self.leftrotation(node)
+                    node = node.parent
+                if node.bf == 2:
+                    if node.left.bf == 1:
+                        self.right_rotation(node)
+                    elif node.left.bf == 0:
+                        self.right_rotation(node)
+                    elif node.left.bf == -1:
+                        self.leftrotation(node.left)
+                        self.right_rotation(node)
+                    node = node.parent
+                if node is not None:
+                    node = node.parent
+        nodemax = self.root
+        while nodemax.right is not None:
+            nodemax = nodemax.right
+        self.max = nodemax
         return
 
     """splits the dictionary at a given node
@@ -470,15 +610,25 @@ class AVLTree(object):
         return AVLTree(root=node)
 
     def split(self, node):
+        if node is None:
+            return AVLTree(),AVLTree()
         smaller = AVLTree.detach_tree(node.left)
         greater = AVLTree.detach_tree(node.right)
-        while node.parent is not None:
-            n_p = node.parent
-            if node is n_p.right:
-                smaller.join(AVLTree.detach_tree(n_p.left),n_p.key,n_p.value)
+        lastnode = node
+        node = node.parent
+        while node is not None:
+            if node.right is lastnode:
+                leftAVLTree = AVLTree.detach_tree(node.left)
+                nodekey = node.key
+                nodevalue = node.value
+                smaller.join(leftAVLTree,nodekey,nodevalue)
             else:
-                greater.join(AVLTree.detach_tree(n_p.right), n_p.key, n_p.value)
-            node = n_p
+                rightAVLTree = AVLTree.detach_tree(node.right)
+                nodekey = node.key
+                nodevalue = node.value
+                greater.join(rightAVLTree,nodekey,nodevalue)
+            lastnode = node
+            node = node.parent
         r1 = greater.root
         r2 = smaller.root
         while r1 is not None and r1.right is not None:
@@ -512,7 +662,7 @@ class AVLTree(object):
     """
 
     def max_node(self):
-        return None
+        return self.max
 
     """returns the number of items in dictionary 
 
@@ -521,7 +671,7 @@ class AVLTree(object):
     """
 
     def size(self):
-        return -1
+        return self.sz
 
     """returns the root of the tree representing the dictionary
 
@@ -540,5 +690,3 @@ def height_2(node):
         return node.height
     else:
         return -1
-
-
