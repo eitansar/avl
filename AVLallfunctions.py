@@ -143,7 +143,7 @@ class AVLTree(object):
         if not is_real_node(self.max):
             return (None, 0)
         r = self.max
-        counter = 0
+        counter = 1
         while r.parent is not None and r.parent.key >= key:
             r = r.parent
             counter += 1
