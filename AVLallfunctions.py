@@ -204,7 +204,7 @@ class AVLTree(object):
         if r == self.root:
             self.root = l
         else:
-            if r.parent.right == r:
+            if r.parent.right is r:
                 r.parent.right = l
             else:
                 r.parent.left = l
@@ -374,11 +374,6 @@ class AVLTree(object):
         if node is None:
             return
         self.sz -=1
-        if node is self.max:
-            nodemax = self.root
-            while nodemax.right is not None:
-                nodemax = nodemax.right
-            self.max = nodemax
         if node.right is None and node.left is None:
             if node is self.root:
                 self.root = None
@@ -388,6 +383,10 @@ class AVLTree(object):
             elif node.parent.left is node:
                 node.parent.left = None
             node = node.parent
+            nodemax = self.root
+            while nodemax.right is not None:
+                nodemax = nodemax.right
+            self.max = nodemax
         elif node.right is None:
             if node is self.root:
                 self.root = node.left
@@ -398,6 +397,10 @@ class AVLTree(object):
                 node.parent.left = node.left
             node.left.parent = node.parent
             node = node.parent
+            nodemax = self.root
+            while nodemax.right is not None:
+                nodemax = nodemax.right
+            self.max = nodemax
         elif node.left is None:
             if node is self.root:
                 self.root = node.right
@@ -408,6 +411,10 @@ class AVLTree(object):
                 node.parent.left = node.right
             node.right.parent = node.parent
             node = node.parent
+            nodemax = self.root
+            while nodemax.right is not None:
+                nodemax = nodemax.right
+            self.max = nodemax
         else:
             nodego = node
             nodego = nodego.right
@@ -425,6 +432,10 @@ class AVLTree(object):
                 if nodego.right is not None:
                     nodego.right.parent = nodepar
             node = nodepar
+            nodemax = self.root
+            while nodemax.right is not None:
+                nodemax = nodemax.right
+            self.max = nodemax
         while node is not None :
             node.bf = height_2(node.left) - height_2(node.right)
             heightbefore = node.height
