@@ -466,7 +466,7 @@ class AVLTree(object):
     def join(self, tree2, key, val):
         self.sz += 1+ tree2.sz
         if tree2.root is None:
-            t.insert(key,val)
+            self.insert(key,val)
             nodemax = self.root
             while nodemax.right is not None:
                 nodemax = nodemax.right
@@ -522,8 +522,8 @@ class AVLTree(object):
                 nodepar = node.parent
                 nodepar.left = nodeadd
                 nodeadd.right = node
-                nodeadd.left = t.root
-                t.root.parent = nodeadd
+                nodeadd.left = self.root
+                self.root.parent = nodeadd
                 nodeadd.parent = nodepar
                 node.parent = nodeadd
             if key > tree2.root.key:
@@ -532,8 +532,8 @@ class AVLTree(object):
                 nodepar = node.parent
                 nodepar.right = nodeadd
                 nodeadd.left = node
-                nodeadd.right = t.root
-                t.root.parent = nodeadd
+                nodeadd.right = self.root
+                self.root.parent = nodeadd
                 nodeadd.parent = nodepar
                 node.parent = nodeadd
             self.root = tree2.root
