@@ -449,6 +449,7 @@ class AVLTree(object):
                         self.leftrotation(node)
                     elif node.right.bf == -1:
                         self.leftrotation(node)
+                    node = node.parent
                 if node.bf == 2:
                     if node.left.bf == 1:
                         self.right_rotation(node)
@@ -457,7 +458,9 @@ class AVLTree(object):
                     elif node.left.bf == -1:
                         self.leftrotation(node.left)
                         self.right_rotation(node)
-                node = node.parent
+                    node = node.parent
+                if node is not None:
+                    node = node.parent
         return
 
     """joins self with item and another AVLTree
@@ -562,6 +565,7 @@ class AVLTree(object):
                         self.leftrotation(node)
                     elif node.right.bf == -1:
                         self.leftrotation(node)
+                    node = node.parent
                 if node.bf == 2:
                     if node.left.bf == 1:
                         self.right_rotation(node)
@@ -570,7 +574,9 @@ class AVLTree(object):
                     elif node.left.bf == -1:
                         self.leftrotation(node.left)
                         self.right_rotation(node)
-                node = node.parent
+                    node = node.parent
+                if node is not None:
+                    node = node.parent
         nodemax = self.root
         while nodemax.right is not None:
             nodemax = nodemax.right
@@ -680,4 +686,3 @@ def height_2(node):
         return node.height
     else:
         return -1
-
