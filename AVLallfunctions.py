@@ -141,7 +141,7 @@ class AVLTree(object):
 
     def finger_search(self, key):
         if not is_real_node(self.max):
-            return (None, 0)
+            return (None, 1)
         r = self.max
         counter = 1
         while r.parent is not None and r.parent.key >= key:
