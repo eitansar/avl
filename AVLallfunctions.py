@@ -191,14 +191,14 @@ class AVLTree(object):
         if x == 'right':
             a.parent.right = a
         b.parent = a
-        a.bf = height_2(a.left) - height_2(a.right)
-        b.bf = height_2(b.left) - height_2(b.right)
-        a_l = height_2(a.left)
-        a_r = height_2(a.right)
         b_r = height_2(b.right)
         b_l = height_2(b.left)
         b.height = max(b_r, b_l) + 1
+        a_l = height_2(a.left)
+        a_r = height_2(a.right)
         a.height = max(a_r, a_l) + 1
+        b.bf = height_2(b.left) - height_2(b.right)
+        a.bf = height_2(a.left) - height_2(a.right)
     def leftrotation(self,r):
         l = r.right
         if r == self.root:
@@ -216,10 +216,8 @@ class AVLTree(object):
             r.right.parent = r
         r.height = 1 + max(height_2(r.left), height_2(r.right))
         r.bf = height_2(r.left) - height_2(r.right)
-
         l.height = 1 + max(height_2(l.left), height_2(l.right))
         l.bf = height_2(l.left) - height_2(l.right)
-
         return 1
     def insert(self, key, val):
         r = self.root
@@ -682,5 +680,4 @@ def height_2(node):
         return node.height
     else:
         return -1
-
 
