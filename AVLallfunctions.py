@@ -371,7 +371,7 @@ class AVLTree(object):
     """
 
     def delete(self, node):
-        if node is None:
+        if node is None or self.search(node.key)[0] is None:
             return
         self.sz -=1
         if node.right is None and node.left is None:
@@ -682,3 +682,5 @@ def height_2(node):
         return node.height
     else:
         return -1
+
+
