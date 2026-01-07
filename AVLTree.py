@@ -351,7 +351,8 @@ class AVLTree(object):
         elif node.right is None:
             if node is self.root:
                 self.root = node.left
-                return
+                self.root.parent = None
+                node = self.root
             elif node.parent.right is node:
                 node.parent.right = node.left
             elif node.parent.left is node:
@@ -365,7 +366,8 @@ class AVLTree(object):
         elif node.left is None:
             if node is self.root:
                 self.root = node.right
-                return
+                self.root.parent = None
+                node = self.root
             elif node.parent.right is node:
                 node.parent.right = node.right
             elif node.parent.left is node:
@@ -657,3 +659,4 @@ def height_2(node):
         return node.height
     else:
         return -1
+
