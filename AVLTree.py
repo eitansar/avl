@@ -46,9 +46,9 @@ class AVLNode(object):
         if self.right is not None:
             self.right.in_order(res)
 
-
-def is_real_node(self):
-    return self is not None
+    @staticmethod
+    def is_real_node(node):
+        return node is not None
 
 
 
@@ -102,14 +102,14 @@ class AVLTree(object):
     """
     # complexity - O(log(n))
     def finger_search(self, key):
-        if not is_real_node(self.max):
-            return (None, 1)
+        if not AVLNode.is_real_node(self.max):
+            return None, 1
         r = self.max
         counter = 1
         while r.parent is not None and r.parent.key >= key:
             r = r.parent
             counter += 1
-        while is_real_node(r) and r.key != key:
+        while AVLNode.is_real_node(r) and r.key != key:
             if r.key > key:
                 r = r.left
                 counter += 1
@@ -188,16 +188,16 @@ class AVLTree(object):
     def insert(self, key, val):
         r = self.root
         self.sz +=1
-        if not is_real_node(r):
+        if not AVLNode.is_real_node(r):
             root = AVLNode(key, val)
             self.root = root
             self.max = root
             root.height = 0
             root.bf = 0
-            return (root, 0, 0)
+            return root, 0, 0
         r_p = None
         counter = 0
-        while is_real_node(r):
+        while AVLNode.is_real_node(r):
             if r.key > key:
                 r_p = r
                 r = r.left
@@ -266,23 +266,20 @@ class AVLTree(object):
     def finger_insert(self, key, val):
             r = self.max
             self.sz +=1
-            if not is_real_node(r):
+            if not AVLNode.is_real_node(r):
                 root = AVLNode(key, val)
                 self.root = root
                 root.height = 0
                 root.bf = 0
                 self.max = root
-                return (root, 0, 0)
-
-
-
+                return root, 0, 0
             counter = 0
 
             while r.parent is not None and r.parent.key >= key:
                 r = r.parent
                 counter += 1
             r_p = r.parent
-            while is_real_node(r):
+            while AVLNode.is_real_node(r):
                 if r.key > key:
                     r_p = r
                     r = r.left
@@ -496,10 +493,11 @@ class AVLTree(object):
                 node.parent = nodeadd
         if (ht + 2 <= htree2):
             node = tree2.root
+            nodepar = node
             if key < tree2.root.key:
                 while (height_2(node) > ht):
+                    nodepar = node
                     node = node.left
-                nodepar = node.parent
                 nodepar.left = nodeadd
                 nodeadd.right = node
                 nodeadd.left = self.root
